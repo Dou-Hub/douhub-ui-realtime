@@ -22,7 +22,7 @@ export const initClient = async (solution: Record<string, any>) => {
         if (!isEmpty(poolUser)) {
             _window.syncClient = {};
             //get realtime token
-            const r = await callAPI(solution, `${solution.apiEndpoint.realtime}token`, {}, 'GET');
+            const r = await callAPI(solution, `${solution.apis.realtime}token`, {}, 'GET');
             if (isNil(_window._twilioSync)) _window._twilioSync = await import('twilio-sync');
 
             _window.syncClient = new _window._twilioSync.SyncClient(r.token);
@@ -30,7 +30,7 @@ export const initClient = async (solution: Record<string, any>) => {
             _window.syncClient.on('tokenAboutToExpire', function () {
                 (async () => {
                     //get new realtime token
-                    const r = await callAPI(solution, `${solution.apiEndpoint.realtime}token`, {}, 'GET');
+                    const r = await callAPI(solution, `${solution.apis.realtime}token`, {}, 'GET');
                     _window.syncClient.updateToken(r.token);
                 })();
             });
@@ -38,7 +38,7 @@ export const initClient = async (solution: Record<string, any>) => {
             _window.syncClient.on('tokenExpired', function () {
                 (async () => {
                     //get new realtime token
-                    const r = await callAPI(solution, `${solution.apiEndpoint.realtime}token`, {}, 'GET');
+                    const r = await callAPI(solution, `${solution.apis.realtime}token`, {}, 'GET');
                     _window.syncClient.updateToken(r.token);
                 })();
             });
@@ -50,43 +50,43 @@ export const initClient = async (solution: Record<string, any>) => {
 }
 
 export const createList = async (solution: Record<string, any>, data: Record<string, any>, settings: Record<string, any>) => {
-    await callAPI(solution, `${solution.apiEndpoint.realtime}create-list`, { ...settings, data }, 'POST');
+    await callAPI(solution, `${solution.apis.realtime}create-list`, { ...settings, data }, 'POST');
 }
 
 export const upsertList = async (solution: Record<string, any>, data: Record<string, any>, settings: Record<string, any>) => {
-    await callAPI(solution, `${solution.apiEndpoint.realtime}update-list`, { ...settings, data }, 'PUT');
+    await callAPI(solution, `${solution.apis.realtime}update-list`, { ...settings, data }, 'PUT');
 }
 
 export const updateList = async (solution: Record<string, any>, data: Record<string, any>, settings: Record<string, any>) => {
-    await callAPI(solution, `${solution.apiEndpoint.realtime}update-list`, { ...settings, data }, 'PUT');
+    await callAPI(solution, `${solution.apis.realtime}update-list`, { ...settings, data }, 'PUT');
 }
 
 export const deleteList = async (solution: Record<string, any>, id: string, settings: Record<string, any>) => {
-    await callAPI(solution, `${solution.apiEndpoint.realtime}delete-list`, { ...settings, id }, 'DELETE');
+    await callAPI(solution, `${solution.apis.realtime}delete-list`, { ...settings, id }, 'DELETE');
 }
 
 export const createListItem = async (solution: Record<string, any>, data: Record<string, any>, settings: Record<string, any>) => {
-   await callAPI(solution, `${solution.apiEndpoint.realtime}create-list-item`, { ...settings, data }, 'POST');
+   await callAPI(solution, `${solution.apis.realtime}create-list-item`, { ...settings, data }, 'POST');
 }
 
 export const deleteListItem = async (solution: Record<string, any>, data: Record<string, any>, settings: Record<string, any>) => {
-    await callAPI(solution, `${solution.apiEndpoint.realtime}delete-list-item`, { ...settings, data }, 'DELETE');
+    await callAPI(solution, `${solution.apis.realtime}delete-list-item`, { ...settings, data }, 'DELETE');
 }
 
 export const createDocument = async (solution: Record<string, any>, data: Record<string, any>, settings: Record<string, any>) => {
-    await callAPI(solution, `${solution.apiEndpoint.realtime}create-document`, { ...settings, data }, 'POST');
+    await callAPI(solution, `${solution.apis.realtime}create-document`, { ...settings, data }, 'POST');
 }
 
 export const upsertDocument = async (solution: Record<string, any>, data: Record<string, any>, settings: Record<string, any>) => {
-    await callAPI(solution, `${solution.apiEndpoint.realtime}upsert-document`, { ...settings, data }, 'PUT');
+    await callAPI(solution, `${solution.apis.realtime}upsert-document`, { ...settings, data }, 'PUT');
 }
 
 export const updateDocument = async (solution: Record<string, any>, data: Record<string, any>, settings: Record<string, any>) => {
-    await callAPI(solution, `${solution.apiEndpoint.realtime}update-document`, { ...settings, data }, 'PUT');
+    await callAPI(solution, `${solution.apis.realtime}update-document`, { ...settings, data }, 'PUT');
 }
 
 export const deleteDocument = async (solution: Record<string, any>, id: string, settings: Record<string, any>) => {
-    await callAPI(solution, `${solution.apiEndpoint.realtime}delete-document`, { ...settings, id }, 'DELETE');
+    await callAPI(solution, `${solution.apis.realtime}delete-document`, { ...settings, id }, 'DELETE');
 }
 
 export const subscribeSyncClient = async (type: 'Document' | 'List', syncId: string, onEvent: any) => {

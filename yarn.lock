@@ -2352,6 +2352,19 @@ douhub-helper-util@1.0.28, douhub-helper-util@^1.0.28:
     lodash "^4.17.21"
     uuid "^8.3.2"
 
+douhub-helper-util@^1.0.38:
+  version "1.0.38"
+  resolved "https://registry.yarnpkg.com/douhub-helper-util/-/douhub-helper-util-1.0.38.tgz#0753616b091b07a9c70852e0a644811830818534"
+  integrity sha512-0k1t51dwY4OItaGAe9q9Y6B8ZrlUdSbEpX1XDpa529+OGqDHkUuPun+vl/X1kqSuzluBMmxIcM+86jNm9ifkdg==
+  dependencies:
+    axios "^0.24.0"
+    is-url "^1.2.4"
+    js-base64 "^3.7.2"
+    libphonenumber-js "^1.9.42"
+    lodash "^4.17.21"
+    slugify "^1.6.4"
+    uuid "^8.3.2"
+
 douhub-ui-store@1.0.27:
   version "1.0.27"
   resolved "https://registry.npmjs.org/douhub-ui-store/-/douhub-ui-store-1.0.27.tgz"
@@ -4852,6 +4865,11 @@ slash@^3.0.0:
   version "3.0.0"
   resolved "https://registry.npmjs.org/slash/-/slash-3.0.0.tgz"
   integrity sha512-g9Q1haeby36OSStwb4ntCGGGaKsaVSjQ68fBxoQcutl5fS1vuY18H3wSt3jFyFtrkx+Kz0V1G85A4MyAdDMi2Q==
+
+slugify@^1.6.4:
+  version "1.6.5"
+  resolved "https://registry.yarnpkg.com/slugify/-/slugify-1.6.5.tgz#c8f5c072bf2135b80703589b39a3d41451fbe8c8"
+  integrity sha512-8mo9bslnBO3tr5PEVFzMPIWwWnipGS0xVbYf65zxDqfNwmzYn1LpiKNrR6DlClusuvo+hDHd1zKpmfAe83NQSQ==
 
 source-map-support@^0.5.6:
   version "0.5.21"

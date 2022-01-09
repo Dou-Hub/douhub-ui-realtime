@@ -4,49 +4,75 @@
 //  The detail information can be found in the LICENSE file in the root directory of this source tree.
 
 
-import { useEffect, FC, createElement, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { getCurrentPoolUser, callAPI } from 'douhub-ui-web';
 
 import { isFunction, isNil, isEmpty } from 'lodash';
-import { isNonEmptyString, isObject, _window } from 'douhub-helper-util';
+import { isNonEmptyString, isObject, _window, _track } from 'douhub-helper-util';
 
-export const initClient = async (solution: Record<string, any>) => {
+export const currentRealtimeNetwork = (
+    onSuccess?: any,
+    onError?: any
+): boolean => {
+    const solution = _window.solution;
+    const [connected, setConnected] = useState<boolean>(false);
 
-    if (!isObject(_window.syncClient)) {
-        console.log('realtime.syncClient.start');
+    useEffect(() => {
+        (async () => {
+            if (!isNil(_window.realtimeNetwork) && isObject(solution)) {
+                if (_track) console.log('realtime.syncClient.start');
 
-        //get the current cognito user
-        const poolUser = await getCurrentPoolUser(solution);
+                try {
+                    //get the current cognito user
+                    const poolUser = await getCurrentPoolUser(solution);
 
-        //only a valid cognito user can do realtime messaging
-        if (!isEmpty(poolUser)) {
-            _window.syncClient = {};
-            //get realtime token
-            const r = await callAPI(solution, `${solution.apis.realtime}token`, {}, 'GET');
-            if (isNil(_window._twilioSync)) _window._twilioSync = await import('twilio-sync');
+                    //only a valid cognito user can do realtime messaging
+                    if (!isEmpty(poolUser)) {
+                        
+                        //get realtime token
+                        const r = await callAPI(solution, `${solution.apis.realtime}token`, {}, 'GET');
+                        if (isNil(_window._twilioSync)) _window._twilioSync = await import('twilio-sync');
 
-            _window.syncClient = new _window._twilioSync.SyncClient(r.token);
+                        _window.realtimeNetwork = new _window._twilioSync.SyncClient(r.token);
 
-            _window.syncClient.on('tokenAboutToExpire', function () {
-                (async () => {
-                    //get new realtime token
-                    const r = await callAPI(solution, `${solution.apis.realtime}token`, {}, 'GET');
-                    _window.syncClient.updateToken(r.token);
-                })();
-            });
+                        _window.realtimeNetwork.on('tokenAboutToExpire', function () {
+                            (async () => {
+                                //get new realtime token
+                                const r = await callAPI(solution, `${solution.apis.realtime}token`, {}, 'GET');
+                                _window.realtimeNetwork.updateToken(r.token);
+                            })();
+                        });
 
-            _window.syncClient.on('tokenExpired', function () {
-                (async () => {
-                    //get new realtime token
-                    const r = await callAPI(solution, `${solution.apis.realtime}token`, {}, 'GET');
-                    _window.syncClient.updateToken(r.token);
-                })();
-            });
+                        _window.realtimeNetwork.on('tokenExpired', function () {
+                            (async () => {
+                                //get new realtime token
+                                const r = await callAPI(solution, `${solution.apis.realtime}token`, {}, 'GET');
+                                _window.realtimeNetwork.updateToken(r.token);
+                            })();
+                        });
 
-            _window.syncClient.subscriptions = {};
-            console.log('realtime.syncClient.success');
-        }
-    }
+                        _window.realtimeNetwork.subscriptions = {};
+                        if (_track) console.log('realtime.syncClient.success');
+                        if (isFunction(onSuccess)) onSuccess('CREATED');
+                    }
+                }
+                catch (error) {
+                    _window.realtimeNetwork = null;
+                    console.error('realtime.syncClient.error', error);
+                    if (isFunction(onError)) onError(error);
+                }
+            }
+            else {
+                
+                if (_track) console.log('realtime.syncClient.existing');
+                if (isFunction(onSuccess)) onSuccess('EXISTING');
+            }
+
+            setConnected(isNil(_window.realtimeNetwork)?false:true);
+        })();
+    }, [_window, solution]);
+
+    return connected;
 }
 
 export const createList = async (solution: Record<string, any>, data: Record<string, any>, settings: Record<string, any>) => {
@@ -66,7 +92,7 @@ export const deleteList = async (solution: Record<string, any>, id: string, sett
 }
 
 export const createListItem = async (solution: Record<string, any>, data: Record<string, any>, settings: Record<string, any>) => {
-   await callAPI(solution, `${solution.apis.realtime}create-list-item`, { ...settings, data }, 'POST');
+    await callAPI(solution, `${solution.apis.realtime}create-list-item`, { ...settings, data }, 'POST');
 }
 
 export const deleteListItem = async (solution: Record<string, any>, data: Record<string, any>, settings: Record<string, any>) => {
@@ -92,19 +118,19 @@ export const deleteDocument = async (solution: Record<string, any>, id: string, 
 export const subscribeSyncClient = async (type: 'Document' | 'List', syncId: string, onEvent: any) => {
     const cacheKey = `${type}-${syncId}`;
 
-    if (isObject(_window.syncClient) &&
-        !isEmpty(_window.syncClient) &&
-        isObject(_window.syncClient.subscriptions) &&
-        !_window.syncClient.subscriptions[cacheKey]) {
+    if (isObject(_window.realtimeNetwork) &&
+        !isEmpty(_window.realtimeNetwork) &&
+        isObject(_window.realtimeNetwork.subscriptions) &&
+        !_window.realtimeNetwork.subscriptions[cacheKey]) {
 
-        console.log('realtime.subscribeSyncClient.start', type, syncId);
+        if (_track) console.log('realtime.subscribeSyncClient.start', type, syncId);
 
         return new Promise((resolve, reject) => {
-            _window.syncClient[type.toLowerCase()](syncId)
+            _window.realtimeNetwork[type.toLowerCase()](syncId)
                 .then((result: any) => {
 
-                    _window.syncClient.subscriptions[cacheKey] = new Date();
-                    console.log('realtime.subscribeSyncClient.success', syncId);
+                    _window.realtimeNetwork.subscriptions[cacheKey] = new Date();
+                    if (_track) console.log('realtime.subscribeSyncClient.success', syncId);
 
                     result.on('updated', function (event: any) {
                         onEvent({ type: 'DOC_UPDATED', data: event.data });
@@ -122,56 +148,45 @@ export const subscribeSyncClient = async (type: 'Document' | 'List', syncId: str
                     resolve(result);
                 })
                 .catch((error: any) => {
-                    console.log('realtime.subscribeSyncClient.failed', type, syncId, error);
+                    console.error('realtime.subscribeSyncClient.failed', type, syncId, error);
                     reject(error);
                 });
         });
     }
     else {
-        console.log('realtime.subscribeSyncClient.false', type, syncId);
+        if (_track) console.log('realtime.subscribeSyncClient.false', type, syncId);
         return null;
     }
 }
 
-export const Realtime: FC<{
+export const useRealtimeSession = (
     type: 'Document' | 'List',
     syncId: string,
-    hideErrorMessage: false,
-    solution: Record<string, any>,
-    onEvent: (message: Record<string, any>) => any,
-    onError?: (message: Record<string, any>, error:any) => any
-}> = (props) => {
+    onEvent: any,
+    onError?: any): string | null => {
 
-    const { syncId, solution, type, hideErrorMessage } = props;
-    const [error, setError] = useState<string>('');
-
-
-    const onEvent = (document: Record<string, any>) => {
-        if (isFunction(props.onEvent)) props.onEvent(document);
-    }
-
-    const onError = (message: string, error: any) => {
-        if (isFunction(props.onError)) {
-            props.onError(document, error);
-        }
-        else {
-            if (hideErrorMessage) setError(message);
-        }
-    }
+    const networkConnected = currentRealtimeNetwork();
+    const [connected, setConnected] = useState<string | null>(null);
 
     useEffect(() => {
         (async () => {
             try {
-                await initClient(solution);
-                if (isNonEmptyString(syncId)) await subscribeSyncClient(type, syncId, onEvent);
+                if (isNonEmptyString(syncId)) {
+                    await subscribeSyncClient(type, syncId, onEvent);
+                    setConnected(syncId);
+                }
+                else {
+                    setConnected(null);
+                }
             }
             catch (error: any) {
                 console.error(error);
+                setConnected(null);
                 const message = `Failed to initialize the realtime comminication (${error?.statusMessage}).`;
                 onError(message, error);
             }
         })();
-    }, [_window._auth, syncId])
+    }, [networkConnected, syncId])
 
-    return createElement('div', { className: 'text-red-500 text-xs' }, error);
+    return connected;
 };

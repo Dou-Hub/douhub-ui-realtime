@@ -10,44 +10,56 @@ import { getCurrentPoolUser, callAPI, _window, _track } from 'douhub-ui-web';
 import { isFunction, isNil, isEmpty } from 'lodash';
 import { isNonEmptyString, isObject, newGuid } from 'douhub-helper-util';
 
-export const createList = async (solution: Record<string, any>, data: Record<string, any>, settings: Record<string, any>) => {
-    await callAPI(solution, `${solution.apis.realtime}create-list`, { ...settings, data }, 'POST');
+export const retrieveList = async (solution: Record<string, any>, id: string, settings?: Record<string, any>) => {
+    return await callAPI(solution, `${solution.apis.realtime}retrieve-list`, { ...settings, id }, 'GET');
 }
 
-export const upsertList = async (solution: Record<string, any>, data: Record<string, any>, settings: Record<string, any>) => {
-    await callAPI(solution, `${solution.apis.realtime}update-list`, { ...settings, data }, 'PUT');
+export const createList = async (solution: Record<string, any>, data: Record<string, any>, settings?: Record<string, any>) => {
+    return await callAPI(solution, `${solution.apis.realtime}create-list`, { ...settings, data }, 'POST');
 }
 
-export const updateList = async (solution: Record<string, any>, data: Record<string, any>, settings: Record<string, any>) => {
-    await callAPI(solution, `${solution.apis.realtime}update-list`, { ...settings, data }, 'PUT');
+export const upsertList = async (solution: Record<string, any>, data: Record<string, any>, settings?: Record<string, any>) => {
+    return await callAPI(solution, `${solution.apis.realtime}update-list`, { ...settings, data }, 'PUT');
 }
 
-export const deleteList = async (solution: Record<string, any>, id: string, settings: Record<string, any>) => {
-    await callAPI(solution, `${solution.apis.realtime}delete-list`, { ...settings, id }, 'DELETE');
+export const updateList = async (solution: Record<string, any>, data: Record<string, any>, settings?: Record<string, any>) => {
+    return await callAPI(solution, `${solution.apis.realtime}update-list`, { ...settings, data }, 'PUT');
 }
 
-export const createListItem = async (solution: Record<string, any>, data: Record<string, any>, settings: Record<string, any>) => {
-    await callAPI(solution, `${solution.apis.realtime}create-list-item`, { ...settings, data }, 'POST');
+export const deleteList = async (solution: Record<string, any>, id: string, settings?: Record<string, any>) => {
+    return await callAPI(solution, `${solution.apis.realtime}delete-list`, { ...settings, id }, 'DELETE');
 }
 
-export const deleteListItem = async (solution: Record<string, any>, data: Record<string, any>, settings: Record<string, any>) => {
-    await callAPI(solution, `${solution.apis.realtime}delete-list-item`, { ...settings, data }, 'DELETE');
+export const retrieveListItem = async (solution: Record<string, any>, id: string, index: number, settings?: Record<string, any>) => {
+    return await callAPI(solution, `${solution.apis.realtime}retrieve-list-item`, { ...settings, id, index }, 'GET');
 }
 
-export const createDocument = async (solution: Record<string, any>, data: Record<string, any>, settings: Record<string, any>) => {
-    await callAPI(solution, `${solution.apis.realtime}create-document`, { ...settings, data }, 'POST');
+export const retrieveListItems = async (solution: Record<string, any>, id: string, settings?: Record<string, any>) => {
+    return await callAPI(solution, `${solution.apis.realtime}retrieve-list-item`, { ...settings, id }, 'GET');
 }
 
-export const upsertDocument = async (solution: Record<string, any>, data: Record<string, any>, settings: Record<string, any>) => {
-    await callAPI(solution, `${solution.apis.realtime}upsert-document`, { ...settings, data }, 'PUT');
+export const createListItem = async (solution: Record<string, any>, data: Record<string, any>, settings?: Record<string, any>) => {
+    return await callAPI(solution, `${solution.apis.realtime}create-list-item`, { ...settings, data }, 'POST');
 }
 
-export const updateDocument = async (solution: Record<string, any>, data: Record<string, any>, settings: Record<string, any>) => {
-    await callAPI(solution, `${solution.apis.realtime}update-document`, { ...settings, data }, 'PUT');
+export const deleteListItem = async (solution: Record<string, any>, data: Record<string, any>, settings?: Record<string, any>) => {
+    return await callAPI(solution, `${solution.apis.realtime}delete-list-item`, { ...settings, data }, 'DELETE');
 }
 
-export const deleteDocument = async (solution: Record<string, any>, id: string, settings: Record<string, any>) => {
-    await callAPI(solution, `${solution.apis.realtime}delete-document`, { ...settings, id }, 'DELETE');
+export const createDocument = async (solution: Record<string, any>, data: Record<string, any>, settings?: Record<string, any>) => {
+    return await callAPI(solution, `${solution.apis.realtime}create-document`, { ...settings, data }, 'POST');
+}
+
+export const upsertDocument = async (solution: Record<string, any>, data: Record<string, any>, settings?: Record<string, any>) => {
+    return await callAPI(solution, `${solution.apis.realtime}upsert-document`, { ...settings, data }, 'PUT');
+}
+
+export const updateDocument = async (solution: Record<string, any>, data: Record<string, any>, settings?: Record<string, any>) => {
+    return await callAPI(solution, `${solution.apis.realtime}update-document`, { ...settings, data }, 'PUT');
+}
+
+export const deleteDocument = async (solution: Record<string, any>, id: string, settings?: Record<string, any>) => {
+    return await callAPI(solution, `${solution.apis.realtime}delete-document`, { ...settings, id }, 'DELETE');
 }
 
 
@@ -83,6 +95,8 @@ export const currentRealtimeNetwork = (
                         if (isNil(_window._twilioSync)) _window._twilioSync = await import('twilio-sync');
 
                         _window.realtimeNetwork = new _window._twilioSync.SyncClient(r.token);
+
+                        if (_track) console.log({token: r.token});
 
                         _window.realtimeNetwork.on('tokenAboutToExpire', function () {
                             (async () => {

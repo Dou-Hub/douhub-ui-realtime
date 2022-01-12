@@ -35,15 +35,15 @@ export const retrieveListItem = async (solution: Record<string, any>, id: string
 }
 
 export const retrieveListItems = async (solution: Record<string, any>, id: string, settings?: Record<string, any>) => {
-    return await callAPI(solution, `${solution.apis.realtime}retrieve-list-item`, { ...settings, id }, 'GET');
+    return await callAPI(solution, `${solution.apis.realtime}retrieve-list-items`, { ...settings, id }, 'GET');
 }
 
 export const createListItem = async (solution: Record<string, any>, data: Record<string, any>, settings?: Record<string, any>) => {
     return await callAPI(solution, `${solution.apis.realtime}create-list-item`, { ...settings, data }, 'POST');
 }
 
-export const deleteListItem = async (solution: Record<string, any>, data: Record<string, any>, settings?: Record<string, any>) => {
-    return await callAPI(solution, `${solution.apis.realtime}delete-list-item`, { ...settings, data }, 'DELETE');
+export const deleteListItem = async (solution: Record<string, any>, id:string, index:number, settings?: Record<string, any>) => {
+    return await callAPI(solution, `${solution.apis.realtime}delete-list-item`, { ...settings, id, index }, 'DELETE');
 }
 
 export const createDocument = async (solution: Record<string, any>, data: Record<string, any>, settings?: Record<string, any>) => {

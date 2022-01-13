@@ -1,7 +1,7 @@
 {
   "name": "douhub-ui-realtime",
   "licence": "MIT",
-  "version": "1.0.22",
+  "version": "1.0.24",
   "main": "build/cjs/index.js",
   "module": "build/esm/index.js",
   "types": "build/esm/index.d.ts",
@@ -19,7 +19,7 @@
   "dependencies": {
     "axios": "^0.24.0",
     "douhub-helper-util": "^1.0.40",
-    "douhub-ui-web": "^1.1.6",
+    "douhub-ui-web": "^1.1.8",
     "lodash": "^4.17.21",
     "marked": "^4.0.7",
     "next": "^12.0.7",

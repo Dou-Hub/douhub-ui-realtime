@@ -7,8 +7,8 @@
 import { useEffect, useState } from 'react';
 import { getCurrentPoolUser, callAPI, _window, _track } from 'douhub-ui-web';
 
-import { isFunction, isNil, isEmpty } from 'lodash';
-import { isNonEmptyString, isObject, newGuid } from 'douhub-helper-util';
+import { isFunction, isNil, isEmpty, isNumber } from 'lodash';
+import { isNonEmptyString, isObject } from 'douhub-helper-util';
 
 export const retrieveList = async (solution: Record<string, any>, id: string, settings?: Record<string, any>) => {
     return await callAPI(solution, `${solution.apis.realtime}retrieve-list`, { ...settings, id }, 'GET');
@@ -42,7 +42,7 @@ export const createListItem = async (solution: Record<string, any>, data: Record
     return await callAPI(solution, `${solution.apis.realtime}create-list-item`, { ...settings, data }, 'POST');
 }
 
-export const deleteListItem = async (solution: Record<string, any>, id:string, index:number, settings?: Record<string, any>) => {
+export const deleteListItem = async (solution: Record<string, any>, id: string, index: number, settings?: Record<string, any>) => {
     return await callAPI(solution, `${solution.apis.realtime}delete-list-item`, { ...settings, id, index }, 'DELETE');
 }
 
@@ -65,13 +65,22 @@ export const deleteDocument = async (solution: Record<string, any>, id: string, 
 
 export const currentRealtimeNetwork = (
     onSuccess?: any,
-    onError?: any
+    onError?: any,
+    settings?: {
+        retryCount?: number,
+        apiEndpoint?: string
+    }
 ): boolean => {
     const solution = _window.solution;
     const [connected, setConnected] = useState<boolean>(false);
-    const [retry, setRetry] = useState<string | null>(null);
+    const [retry, setRetry] = useState(0);
+    const [error, setError] = useState(null);
 
-    const isGoodNetwork = ()=>{
+    settings = isObject(settings) ? settings : {};
+    const retryCount = settings && isNumber(settings?.retryCount) && settings?.retryCount > 0 ? settings.retryCount : 5;
+    const apiEndpoint = settings && isNonEmptyString(settings?.apiEndpoint) ? settings?.apiEndpoint : solution.apis.realtime;
+
+    const isGoodNetwork = () => {
         return isObject(_window?.realtimeNetwork?.subscriptions);
     }
 
@@ -91,17 +100,17 @@ export const currentRealtimeNetwork = (
                     if (!isEmpty(poolUser)) {
 
                         //get realtime token
-                        const r = await callAPI(solution, `${solution.apis.realtime}token`, {}, 'GET');
+                        const r = await callAPI(solution, `${apiEndpoint}token`, {}, 'GET');
                         if (isNil(_window._twilioSync)) _window._twilioSync = await import('twilio-sync');
 
                         _window.realtimeNetwork = new _window._twilioSync.SyncClient(r.token);
 
-                        if (_track) console.log({token: r.token});
+                        if (_track) console.log({ token: r.token });
 
                         _window.realtimeNetwork.on('tokenAboutToExpire', function () {
                             (async () => {
                                 //get new realtime token
-                                const r = await callAPI(solution, `${solution.apis.realtime}token`, {}, 'GET');
+                                const r = await callAPI(solution, `${apiEndpoint}token`, {}, 'GET');
                                 _window.realtimeNetwork.updateToken(r.token);
                             })();
                         });
@@ -109,7 +118,7 @@ export const currentRealtimeNetwork = (
                         _window.realtimeNetwork.on('tokenExpired', function () {
                             (async () => {
                                 //get new realtime token
-                                const r = await callAPI(solution, `${solution.apis.realtime}token`, {}, 'GET');
+                                const r = await callAPI(solution, `${apiEndpoint}token`, {}, 'GET');
                                 _window.realtimeNetwork.updateToken(r.token);
                             })();
                         });
@@ -122,7 +131,7 @@ export const currentRealtimeNetwork = (
                 catch (error) {
                     delete _window.realtimeNetwork;
                     console.error('realtime.syncClient.error', error);
-                    if (isFunction(onError)) onError(error);
+                    setError(error);
                 }
             }
             else {
@@ -135,13 +144,20 @@ export const currentRealtimeNetwork = (
     }, [retry]);
 
     useEffect(() => {
-        const timeout = setTimeout(() => {
-            if (_track) console.log('realtime.syncClient.retrying', { retry, connected });
-            if (!connected) {
-                setRetry(()=>{return newGuid()});
-            }
-        }, 3000);
-        return () => clearInterval(timeout)
+        if (retry < retryCount) {
+            const timeout = setTimeout(() => {
+                if (_track) console.log('realtime.syncClient.retrying', { retry, connected });
+                if (!connected) {
+                    setRetry(() => { return retry + 1 });
+                }
+            }, 3000);
+            return () => clearInterval(timeout)
+        }
+        else {
+            if (_track) console.error(`realtime.useRealtimeSession.retried ${retry} times.`);
+            if (isFunction(onError)) onError(error);
+            return () => { }
+        }
     }, [retry]);
 
 
@@ -195,43 +211,50 @@ export const useRealtimeSession = (
     type: 'Document' | 'List',
     syncId: string,
     onEvent: any,
-    onError?: any): string | null => {
+    onError?: any,
+    settings?: {
+        retryCount?: number
+    }
+): string | null => {
 
     const networkConnected = currentRealtimeNetwork();
     const [connected, setConnected] = useState<string | null>(null);
-    const [retry, setRetry] = useState<string | null>(null);
+    const [retry, setRetry] = useState(0);
+    const [error, setError] = useState(null);
+
+    settings = isObject(settings) ? settings : {};
+    const retryCount = settings && isNumber(settings?.retryCount) && settings?.retryCount > 0 ? settings.retryCount : 5;
 
     if (_track) console.log({ networkConnected, type, syncId })
 
     useEffect(() => {
-        try {
-            if (networkConnected && isNonEmptyString(syncId)) {
-                initSync(type, syncId, onEvent)
-                    .then(() => {
-                        setConnected(syncId);
-                    })
-                    .catch((error: any) => {
-                        console.error(error);
-                        setConnected(null);
-                    })
-            }
+        if (networkConnected && isNonEmptyString(syncId)) {
+            initSync(type, syncId, onEvent)
+                .then(() => {
+                    setConnected(syncId);
+                })
+                .catch((error: any) => {
+                    setError(error);
+                    console.error(error);
+                })
         }
-        catch (error: any) {
-            setConnected(null);
-            console.error(error);
-            onError(error);
-        }
-
     }, [retry]);
 
     useEffect(() => {
-        const timeout = setTimeout(() => {
-            if (_track) console.log('realtime.useRealtimeSession.retrying', { retry, connected });
-            if (!connected) {
-                setRetry(()=>{return newGuid()});
-            }
-        }, 3000);
-        return () => clearInterval(timeout)
+        if (retry < retryCount) {
+            const timeout = setTimeout(() => {
+                if (_track) console.log('realtime.useRealtimeSession.retrying', { retry, connected });
+                if (!connected) {
+                    setRetry(() => { return retry + 1 });
+                }
+            }, 3000);
+            return () => clearInterval(timeout)
+        }
+        else {
+            if (_track) console.error(`realtime.useRealtimeSession.retried ${retry} times.`);
+            if (isFunction(onError)) onError(error);
+            return () => { }
+        }
     }, [retry]);
 
     return connected;

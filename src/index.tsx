@@ -68,10 +68,12 @@ export const currentRealtimeNetwork = (
     onError?: any,
     settings?: {
         retryCount?: number,
-        apiEndpoint?: string
+        apiEndpoint?: string,
+        solution?:Record<string,any>
     }
 ): boolean => {
-    const solution = _window.solution;
+
+    const solution =  settings?.solution?settings?.solution: _window.solution;
     const [connected, setConnected] = useState<boolean>(false);
     const [retry, setRetry] = useState(0);
     const [error, setError] = useState(null);

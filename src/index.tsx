@@ -5,8 +5,7 @@
 
 
 import { useEffect, useState } from 'react';
-import { getCurrentPoolUser, callAPI, _window, _track } from 'douhub-ui-web';
-
+import { getCurrentPoolUser, callAPI, _window, _track } from 'douhub-ui-web-basic';
 import { isFunction, isNil, isEmpty, isNumber } from 'lodash';
 import { isNonEmptyString, isObject } from 'douhub-helper-util';
 

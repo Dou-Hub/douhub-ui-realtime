@@ -2035,10 +2035,10 @@ domexception@^2.0.1:
   dependencies:
     webidl-conversions "^5.0.0"
 
-douhub-helper-util@1.0.70:
-  version "1.0.70"
-  resolved "https://registry.yarnpkg.com/douhub-helper-util/-/douhub-helper-util-1.0.70.tgz#1a94fcb4d7727c0d31a112473339e4cc712f3bff"
-  integrity sha512-MiuLtGCP3eQgB/5GtN6DW2O80tLzUM9kzQ4f97s0c/GbBtMzyzWpbvbdX+2D0klQmk4oQelOBTtKOZoitxx/9Q==
+douhub-helper-util@1.0.85, douhub-helper-util@^1.0.85:
+  version "1.0.85"
+  resolved "https://registry.yarnpkg.com/douhub-helper-util/-/douhub-helper-util-1.0.85.tgz#1074cb769e760b916a0b27dfb3763cc94207b9a0"
+  integrity sha512-DHMSgctz7uD6mqYNWaYq11yYspPqSRFW2J9T/UUZ2PZ8+Vgo4QsWipSxHkIIkA3ds3ktmGxlEi6iz3mlWoHCbg==
   dependencies:
     axios "^0.24.0"
     csvtojson "^2.0.10"
@@ -2049,26 +2049,12 @@ douhub-helper-util@1.0.70:
     slugify "^1.6.4"
     uuid "^8.3.2"
 
-douhub-helper-util@1.0.81, douhub-helper-util@^1.0.81:
-  version "1.0.81"
-  resolved "https://registry.yarnpkg.com/douhub-helper-util/-/douhub-helper-util-1.0.81.tgz#94fd5011e937c7cc752d08a25390601f47a993b0"
-  integrity sha512-NhToHCEmaBIvYtbNVBm2U/I2II/Y4mLaVPCSJ9nnyA5A12QOzcay28r4scQOAd93sFjJcEY5stuwLSn3H/pqdQ==
+douhub-ui-store@1.0.52:
+  version "1.0.52"
+  resolved "https://registry.yarnpkg.com/douhub-ui-store/-/douhub-ui-store-1.0.52.tgz#d1669e937868a96ca79bfedc5fd697065ab54da1"
+  integrity sha512-f9EBgGVwfYOstS8FgI3hG5eOIhpelNR3vOPNVD/6uZRJIwoTJ4rydV+X3vVU5ObkUCQFw513bb4tie3rTYfGZQ==
   dependencies:
-    axios "^0.24.0"
-    csvtojson "^2.0.10"
-    is-url "^1.2.4"
-    js-base64 "^3.7.2"
-    libphonenumber-js "^1.9.42"
-    lodash "^4.17.21"
-    slugify "^1.6.4"
-    uuid "^8.3.2"
-
-douhub-ui-store@1.0.51:
-  version "1.0.51"
-  resolved "https://registry.yarnpkg.com/douhub-ui-store/-/douhub-ui-store-1.0.51.tgz#690b0b16d689b4d041bbe57e855a03d60d34bf1b"
-  integrity sha512-iMrsmgAWLFUMHuzy05K846Rm4RDzWpEInLMnWn7GkhdSfd+O1bqYwYoH4hHr9Z1snnFb3lykUqWUdaxTTpEsBg==
-  dependencies:
-    douhub-helper-util "1.0.70"
+    douhub-helper-util "1.0.85"
     lodash "^4.17.21"
     mobx "^6.3.5"
     mobx-react "^7.2.1"
@@ -2077,16 +2063,16 @@ douhub-ui-store@1.0.51:
     react "^17.0.2"
     react-dom "^17.0.2"
 
-douhub-ui-web-basic@^1.0.5:
-  version "1.0.5"
-  resolved "https://registry.yarnpkg.com/douhub-ui-web-basic/-/douhub-ui-web-basic-1.0.5.tgz#4518c002fe1e9eea1bbde7fd509c322d98c83e38"
-  integrity sha512-+st+CfyYhnC7AkM30o16F9HXM8E/upL9A/h1Yp0jfOwH+Es2hYEv4y30Y461YhxjICF/YFcJPQDw5pldbu+alg==
+douhub-ui-web-basic@^1.0.19:
+  version "1.0.19"
+  resolved "https://registry.yarnpkg.com/douhub-ui-web-basic/-/douhub-ui-web-basic-1.0.19.tgz#9a928af7e14d10a9b62b1a928abc0673506688b9"
+  integrity sha512-gtoWJS65s+cEXLMWNG1fNeY/+Q42jdlRRHgI5gGWzw9AX2PsplfW2xrltxzcv2ei4Tl9N7N9S+kowOVSGAaoRg==
   dependencies:
     "@aws-amplify/auth" "^4.3.19"
     "@headlessui/react" "^1.4.3"
     antd "^4.18.4"
-    douhub-helper-util "1.0.81"
-    douhub-ui-store "1.0.51"
+    douhub-helper-util "1.0.85"
+    douhub-ui-store "1.0.52"
     lodash "^4.17.21"
     marked "^4.0.7"
     next "12.1.0"

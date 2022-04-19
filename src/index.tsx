@@ -68,11 +68,11 @@ export const currentRealtimeNetwork = (
     settings?: {
         retryCount?: number,
         apiEndpoint?: string,
-        solution?:Record<string,any>
+        solution?: Record<string, any>
     }
 ): boolean => {
 
-    const solution =  settings?.solution?settings?.solution: _window.solution;
+    const solution = settings?.solution ? settings?.solution : _window.solution;
     const [connected, setConnected] = useState<boolean>(false);
     const [retry, setRetry] = useState(0);
     const [error, setError] = useState(null);
@@ -179,16 +179,16 @@ const initSync = async (type: 'Document' | 'List', syncId: string, onEvent: any)
                     if (_track) console.log('realtime.subscribeSyncClient.success', syncId, result);
 
                     result.on('updated', function (event: any) {
-                        onEvent({ type: 'DOC_UPDATED', data: event.data });
+                        onEvent({ type: 'DOC_UPDATED', data: event.data, syncId });
                     });
                     result.on('itemAdded', function (args: Record<string, any>) {
-                        onEvent({ type: 'ITEM_ADDED', data: args.item });
+                        onEvent({ type: 'ITEM_ADDED', data: args.item, syncId });
                     });
                     result.on('itemRemoved', function (args: Record<string, any>) {
-                        onEvent({ type: 'ITEM_REMOVED', data: args.item });
+                        onEvent({ type: 'ITEM_REMOVED', data: args.item, syncId });
                     });
                     result.on('itemUpdated', function (args: Record<string, any>) {
-                        onEvent({ type: 'ITEM_UPDATED', data: args.item });
+                        onEvent({ type: 'ITEM_UPDATED', data: args.item, syncId });
                     });
 
                     _window.realtimeNetwork.subscriptions[cacheKey].end = new Date();
@@ -220,19 +220,34 @@ export const useRealtimeSession = (
 
     const networkConnected = currentRealtimeNetwork();
     const [connected, setConnected] = useState<string | null>(null);
-    const [retry, setRetry] = useState(0);
+    const [retry, setRetry] = useState(-1);
+    const [currentSyncId, setCurrentSyncId] = useState('');
     const [error, setError] = useState(null);
 
     settings = isObject(settings) ? settings : {};
     const retryCount = settings && isNumber(settings?.retryCount) && settings?.retryCount > 0 ? settings.retryCount : 5;
 
-    if (_track) console.log({ networkConnected, type, syncId })
+    if (_track) console.log({ networkConnected, type, currentSyncId });
 
     useEffect(() => {
+        //STEP 1
         if (networkConnected && isNonEmptyString(syncId)) {
+            setCurrentSyncId(syncId);
+            setConnected(null);
+            //kick off retry from 1
+            if (_track) console.log('realtime.useRealtimeSession.newSyncId', { retry, connected, currentSyncId });
+            setRetry(1);
+        }
+    }, [syncId, networkConnected])
+
+    useEffect(() => {
+        //STEP 2: Start trying to initSync
+        if (retry > 0) {
+            if (_track) console.log('realtime.useRealtimeSession.initSync', { retry, connected, currentSyncId });
             initSync(type, syncId, onEvent)
                 .then(() => {
-                    setConnected(syncId);
+                    if (_track) console.log('realtime.useRealtimeSession.synced', { retry, connected, currentSyncId });
+                    setConnected(currentSyncId);
                 })
                 .catch((error: any) => {
                     setError(error);
@@ -242,10 +257,12 @@ export const useRealtimeSession = (
     }, [retry]);
 
     useEffect(() => {
-        if (retry < retryCount) {
+
+        //STEP 3: retry every 3s until retryCount times
+        if (retry > 0 && retry < retryCount) {
             const timeout = setTimeout(() => {
-                if (_track) console.log('realtime.useRealtimeSession.retrying', { retry, connected });
                 if (!connected) {
+                    if (_track) console.log('realtime.useRealtimeSession.retry', { retry: retry + 1, connected, currentSyncId });
                     setRetry(() => { return retry + 1 });
                 }
             }, 3000);
